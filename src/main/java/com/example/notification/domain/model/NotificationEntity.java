@@ -19,7 +19,7 @@ public class NotificationEntity {
     @Id
     private String id;
 
-    @Indexed
+    @Indexed(unique = true)
     private String notificationId;
 
     @Indexed
