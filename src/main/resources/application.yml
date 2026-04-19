@@ -1,0 +1,79 @@
+spring:
+  application:
+    name: notification-service
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: notification-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      max-poll-records: 500
+      properties:
+        spring.json.trusted.packages: "com.example.notification.domain.model"
+        fetch.min.bytes: 1
+        fetch.max.wait.ms: 500
+        max.poll.interval.ms: 300000
+        session.timeout.ms: 30000
+        heartbeat.interval.ms: 10000
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/notifications}
+      auto-index-creation: true
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+
+kafka:
+  topics:
+    notification-main: notification-main
+    notification-retry-1: notification-main-retry-1
+    notification-retry-2: notification-main-retry-2
+    notification-dlt: notification-main-dlt
+  consumer:
+    concurrency: ${KAFKA_CONSUMER_CONCURRENCY:3}
+  retry:
+    retry1-delay-ms: 30000
+    retry1-jitter-ms: 15000
+    retry2-delay-ms: 300000
+    retry2-jitter-ms: 60000
+
+firebase:
+  service-account-path: ${FIREBASE_SERVICE_ACCOUNT_PATH:classpath:firebase-service-account.json}
+
+notification:
+  from-email: ${FROM_EMAIL:noreply@example.com}
+  from-name: ${FROM_NAME:Notification Service}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    com.example.notification: DEBUG
+    org.springframework.kafka: INFO
